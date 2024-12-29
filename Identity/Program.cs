@@ -1,10 +1,16 @@
 using Identity.Data.Context;
+using Identity.Data.Entity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddIdentity<User,Role>().AddEntityFrameworkStores<DataBaseContext>()
+    .AddDefaultTokenProviders();
+
+
 
 
 #region Context
