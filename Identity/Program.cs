@@ -1,7 +1,18 @@
+using Identity.Data.Context;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+
+#region Context
+builder.Services.AddDbContext<DataBaseContext>(
+    p=>p.UseSqlServer("Data Source=.;Initial Catalog=IdentityDB;Integrated Security=true;TrustServerCertificate=True;MultipleActiveResultSets=true;")
+    );
+#endregion
+
 
 var app = builder.Build();
 
