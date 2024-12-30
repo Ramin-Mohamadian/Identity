@@ -9,10 +9,12 @@ namespace Identity.Controllers
     {
 
         private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public AccountController(UserManager<User> userManager)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
 
@@ -61,6 +63,47 @@ namespace Identity.Controllers
             TempData["message"]=message;
 
             return View(register);
+        }
+
+
+
+
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+
+
+        [HttpPost]
+        public IActionResult Login(LoginDto login)
+        {
+
+            if(ModelState.IsValid==false)
+                return View(login);
+
+            var user =_userManager.FindByNameAsync(login.UserName).Result;
+
+            var result = _signInManager.PasswordSignInAsync(user, login.Password, login.IsPersistent, true).Result;
+
+
+            if (result.Succeeded)
+            {
+              return RedirectToAction("Index","Home");
+            }
+
+
+
+            return View();
+        }
+
+
+
+        public IActionResult LogOut()
+        {
+            _signInManager.SignOutAsync();
+            return RedirectToAction("Index","Home");
         }
 
 
