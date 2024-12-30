@@ -24,14 +24,14 @@ namespace Identity.Controllers
 
 
 
-        public IActionResult Registe()
+        public IActionResult Register()
         {
             return View();
         }
 
-
-        [HttpPost]
-        public IActionResult Registe(RegisterDto register)
+       
+        [HttpPost]     
+        public IActionResult Register(RegisterDto register)
         {
             if (ModelState.IsValid==false)
             return View(register);
@@ -60,7 +60,7 @@ namespace Identity.Controllers
 
             TempData["message"]=message;
 
-            return View();
+            return View(register);
         }
 
 

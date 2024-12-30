@@ -1,7 +1,7 @@
 ﻿@model Identity.Data.Dto.RegisterDto
 
 @{
-    ViewData["Title"] = "Registe";
+    ViewData["Title"] = "Register";
 }
 
 <h1>Registe</h1>
@@ -19,7 +19,7 @@
                 </text>
             </div>
         }
-        <form asp-action="Registe">
+        <form asp-action="Register" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="FirstName" class="control-label"></label>
