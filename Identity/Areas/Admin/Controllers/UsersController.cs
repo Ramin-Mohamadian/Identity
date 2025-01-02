@@ -78,7 +78,55 @@ namespace Identity.Areas.Admin.Controllers
 
 
 
+        [HttpGet]
+        public IActionResult EditUser(string id)
+        {
+            var user=_userManager.FindByIdAsync(id).Result;
 
+            EditeUserDto userDto = new EditeUserDto()
+            {
+                Id = user.Id,
+                Email=user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                UserName=user.UserName,
+                PhoneNumber=user.PhoneNumber
+            };
+
+
+            return View(userDto);
+        }
+
+
+
+
+
+        [HttpPost]
+        public IActionResult EditUser(EditeUserDto edite)
+        {
+            var user=_userManager.FindByIdAsync(edite.Id).Result;
+
+            if(user == null) 
+                return NotFound();
+
+            user.Email = edite.Email;
+            user.FirstName = edite.FirstName;
+            user.LastName = edite.LastName;
+            user.UserName = edite.UserName;
+            user.PhoneNumber = edite.PhoneNumber;
+
+
+            var result=_userManager.UpdateAsync(user).Result;
+
+
+
+            if (result.Succeeded)
+            {
+                return Redirect("/Admin/Users/Index");
+            }
+
+            return View();
+        }
 
     }
 }
