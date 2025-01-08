@@ -56,6 +56,39 @@ namespace Identity.Areas.Admin.Controllers
             return View();
         }
 
+        [HttpGet]
+        public IActionResult EditRole(string id)
+        {
+            var role = _roleManager.FindByIdAsync(id).Result;
+
+            EditRoleDto editRoleDto = new EditRoleDto()
+            {
+                Id = role.Id,
+                Name = role.Name
+            };
+            return View(editRoleDto);
+        }
+
+
+        [HttpPost]
+        public IActionResult EditRole(EditRoleDto editRoleDto)
+        {
+            var role = _roleManager.FindByIdAsync(editRoleDto.Id).Result;
+            if (role == null)
+            {
+                return NotFound();
+            }
+
+            role.Name = editRoleDto.Name;
+            role.Id= editRoleDto.Id;
+            var result=_roleManager.UpdateAsync(role).Result;
+            if (result.Succeeded)
+            {
+                return Redirect("/Admin/Role");
+            }
+
+            return View();
+        }
 
     }
 }
