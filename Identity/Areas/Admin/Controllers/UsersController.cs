@@ -3,6 +3,7 @@ using Identity.Data.Dto;
 using Identity.Data.Entity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Identity.Areas.Admin.Controllers
 {
@@ -10,9 +11,11 @@ namespace Identity.Areas.Admin.Controllers
     public class UsersController : Controller
     {
         private readonly UserManager<User> _userManager;
-        public UsersController(UserManager<User> userManager)
+        private readonly RoleManager<Role> _roleManager;
+        public UsersController(UserManager<User> userManager, RoleManager<Role> roleManager)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
         }
 
 
@@ -127,6 +130,54 @@ namespace Identity.Areas.Admin.Controllers
 
             return View();
         }
+
+
+
+
+        [HttpGet]
+        public IActionResult AddUserRole(string Id)
+        {
+
+            var user = _userManager.FindByIdAsync(Id).Result;
+
+            var roles = new List<SelectListItem>(
+                _roleManager.Roles.Select(p => new SelectListItem
+                {
+                    Text = p.Name,
+                    Value = p.Name
+                }).ToList()
+                );
+            return View(new AddUserRoleDto
+            {
+                Id = Id,
+                Roles = roles,
+                Email = user.Email,
+                UserName = user.UserName
+            });
+        }
+
+        [HttpPost]
+        public ActionResult AddUserRole(AddUserRoleDto addUserRoleDto)
+        {
+            var user = _userManager.FindByIdAsync(addUserRoleDto.Id).Result;
+
+            var result = _userManager.AddToRoleAsync(user, addUserRoleDto.Role).Result;
+
+
+
+            return RedirectToAction("UserRoles", "Users", new { Id = user.Id, area = "admin" });
+        }
+
+
+
+
+        public IActionResult UserRoles(string Id)
+        {
+            var user = _userManager.FindByIdAsync(Id).Result;
+            var roles = _userManager.GetRolesAsync(user).Result;
+            return View(roles);
+        }
+
 
     }
 }

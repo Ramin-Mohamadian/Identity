@@ -2,6 +2,8 @@
 using Identity.Data.Entity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Drawing.Printing;
 
 namespace Identity.Controllers
 {
@@ -10,11 +12,14 @@ namespace Identity.Controllers
 
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly RoleManager<Role> _roleManager;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager
+            ,RoleManager<Role> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
         }
 
 
@@ -31,12 +36,12 @@ namespace Identity.Controllers
             return View();
         }
 
-       
-        [HttpPost]     
+
+        [HttpPost]
         public IActionResult Register(RegisterDto register)
         {
-            if (ModelState.IsValid==false)
-            return View(register);
+            if (ModelState.IsValid == false)
+                return View(register);
 
 
             User newUser = new User()
@@ -44,14 +49,14 @@ namespace Identity.Controllers
                 FirstName = register.FirstName,
                 LastName = register.LastName,
                 Email = register.Email,
-                UserName=register.Email,
+                UserName = register.Email,
             };
 
-            var result=_userManager.CreateAsync(newUser,register.Password).Result;
+            var result = _userManager.CreateAsync(newUser, register.Password).Result;
 
             if (result.Succeeded)
             {
-                return RedirectToAction("Index","Home");
+                return RedirectToAction("Index", "Home");
             }
 
             string message = "";
@@ -60,7 +65,7 @@ namespace Identity.Controllers
                 message += item.Description + Environment.NewLine;
             }
 
-            TempData["message"]=message;
+            TempData["message"] = message;
 
             return View(register);
         }
@@ -80,17 +85,17 @@ namespace Identity.Controllers
         public IActionResult Login(LoginDto login)
         {
 
-            if(ModelState.IsValid==false)
+            if (ModelState.IsValid == false)
                 return View(login);
 
-            var user =_userManager.FindByNameAsync(login.UserName).Result;
+            var user = _userManager.FindByNameAsync(login.UserName).Result;
 
             var result = _signInManager.PasswordSignInAsync(user, login.Password, login.IsPersistent, true).Result;
 
 
             if (result.Succeeded)
             {
-              return RedirectToAction("Index","Home");
+                return RedirectToAction("Index", "Home");
             }
 
 
@@ -103,8 +108,9 @@ namespace Identity.Controllers
         public IActionResult LogOut()
         {
             _signInManager.SignOutAsync();
-            return RedirectToAction("Index","Home");
+            return RedirectToAction("Index", "Home");
         }
+
 
 
     }
