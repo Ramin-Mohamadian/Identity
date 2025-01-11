@@ -1,5 +1,6 @@
 ﻿using Identity.Data.Dto;
 using Identity.Data.Entity;
+using Identity.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -13,13 +14,15 @@ namespace Identity.Controllers
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly RoleManager<Role> _roleManager;
+        private readonly EmailService _emailService;
 
         public AccountController(UserManager<User> userManager, SignInManager<User> signInManager
-            ,RoleManager<Role> roleManager)
+            , RoleManager<Role> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
+            _emailService = new EmailService();
         }
 
 
@@ -56,7 +59,14 @@ namespace Identity.Controllers
 
             if (result.Succeeded)
             {
-                return RedirectToAction("Index", "Home");
+                var token = _userManager.GenerateEmailConfirmationTokenAsync(newUser).Result;
+                string callbackUrl = Url.Action("ConfirmEmail", "Account", new { UserId = newUser.Id, Token = token },
+                    protocol: Request.Scheme);
+
+                string Body = $"کاربر گرامی برای فعال سازی ایمیل خود روی لینک زیر کلیک کنید! <br/> <a href={callbackUrl}> Link </a>";
+
+                _emailService.Excute(newUser.Email, Body, "تایید ایمیل حساب کاربر");
+                return RedirectToAction("DisplayEmail");
             }
 
             string message = "";
@@ -112,6 +122,28 @@ namespace Identity.Controllers
         }
 
 
+        public IActionResult DisplayEmail()
+        {
+            return View();
+        }
+
+
+        public IActionResult ConfirmEmail(string UserId, string Token)
+        {
+            if (UserId == null || Token == null)
+            {
+                return BadRequest();
+            }
+
+            var user = _userManager.FindByIdAsync(UserId).Result;
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var result = _userManager.ConfirmEmailAsync(user, Token).Result;
+            return RedirectToAction("Login");
+        }
 
     }
 }
