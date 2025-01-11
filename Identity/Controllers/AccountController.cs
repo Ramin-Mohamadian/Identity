@@ -3,8 +3,7 @@ using Identity.Data.Entity;
 using Identity.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Drawing.Printing;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
 namespace Identity.Controllers
 {
@@ -144,6 +143,82 @@ namespace Identity.Controllers
             var result = _userManager.ConfirmEmailAsync(user, Token).Result;
             return RedirectToAction("Login");
         }
+
+
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+
+        [HttpPost]
+        public IActionResult ForgotPassword(ForgotPasswordDto forgot)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var user = _userManager.FindByEmailAsync(forgot.Email).Result;
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            string token = _userManager.GeneratePasswordResetTokenAsync(user).Result;
+
+            string callbackUrl = Url.Action("RessetPassword", "Account", new
+            {
+                UserId = user.Id,
+                Token = token
+            }, protocol: Request.Scheme);
+
+            string Body = $"برای بازیابی کلمه عبور بر روی لینک زیر کلیک کنید! <br/> <a href={callbackUrl} > بازیابی کلمه عبور </a> ";
+
+            _emailService.Excute(user.Email, Body, "بازیابی کلمه عبور");
+            ViewData["SendEmail"] = true;
+            return View();
+        }
+
+
+
+        [HttpGet]
+        public IActionResult RessetPassword(string UserId, string Token)
+        {
+
+            return View(new RessetPasswordDto
+            {
+                UserId = UserId,
+                Token = Token
+            });
+        }
+
+
+        [HttpPost]
+        public IActionResult RessetPassword(RessetPasswordDto resset)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var user = _userManager.FindByIdAsync(resset.UserId).Result;
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var result=_userManager.ResetPasswordAsync(user,resset.Token,resset.Password).Result;
+            if(result.Succeeded)
+            {
+                ViewData["ResetPass"]=true;
+                return View();
+            }
+
+           return View(resset);
+        }
+
 
     }
 }

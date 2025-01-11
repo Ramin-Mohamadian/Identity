@@ -19,7 +19,7 @@ namespace Identity.Data.Context
             builder.Entity<IdentityUserRole<string>>().HasKey(p => new {p.RoleId, p.UserId});
             builder.Entity<IdentityUserToken<string>>().HasKey(p => new {p.UserId,p.LoginProvider,p.Name});
 
-            builder.Entity<User>().Ignore(i => i.NormalizedEmail); 
+          
             
         }
 
